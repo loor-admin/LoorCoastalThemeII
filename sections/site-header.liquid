@@ -1,0 +1,29 @@
+<header class="site-header"><div class="header-inner">
+  <mobile-nav-drawer class="mobile-only"><button type="button" data-open-dialog="MobileNav-{{ section.id }}" aria-haspopup="dialog" aria-label="Open menu">☰</button><dialog id="MobileNav-{{ section.id }}" class="drawer drawer--left" aria-labelledby="MobileNavTitle-{{ section.id }}"><div class="modal__head"><h2 id="MobileNavTitle-{{ section.id }}">Menu</h2><button type="button" data-close-dialog aria-label="Close menu">×</button></div><nav aria-label="Mobile navigation"><ul class="nav-list">{% for link in section.settings.menu.links %}<li>{% if link.links != blank %}<details><summary>{{ link.title | escape }}</summary><a href="{{ link.url }}">Shop all {{ link.title | escape }}</a><ul>{% for child in link.links %}<li><a href="{{ child.url }}">{{ child.title | escape }}</a>{% if child.links != blank %}<ul>{% for grandchild in child.links %}<li><a href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>{% endfor %}</ul>{% endif %}</li>{% endfor %}</ul></details>{% else %}<a href="{{ link.url }}">{{ link.title | escape }}</a>{% endif %}</li>{% endfor %}</ul></nav>{% render 'localization', id: section.id %}</dialog></mobile-nav-drawer>
+  <a href="{{ routes.root_url }}" class="site-logo" aria-label="{{ shop.name | escape }} home">{% if section.settings.logo != blank %}{{ section.settings.logo | image_url: width: 400 | image_tag: widths: '100, 200, 300, 400', sizes: '160px', alt: shop.name }}{% else %}{{ shop.name | escape }}{% endif %}</a>
+  <nav class="desktop-nav" aria-label="Main navigation"><ul>{% for link in section.settings.menu.links %}<li>{% if link.links != blank %}<details><summary>{{ link.title | escape }}</summary><div class="mega-menu"><a href="{{ link.url }}">Shop all {{ link.title | escape }}</a><div class="mega-columns">{% for child in link.links %}<div><a class="mega-heading" href="{{ child.url }}">{{ child.title | escape }}</a><ul>{% for grandchild in child.links %}<li><a href="{{ grandchild.url }}">{{ grandchild.title | escape }}</a></li>{% endfor %}</ul></div>{% endfor %}</div></div></details>{% else %}<a href="{{ link.url }}">{{ link.title | escape }}</a>{% endif %}</li>{% endfor %}</ul></nav>
+  <div class="header-actions"><button type="button" data-open-dialog="SearchDialog-{{ section.id }}" aria-haspopup="dialog">Search</button><details class="utility-menu desktop-only"><summary>Help</summary><div><a href="{{ section.settings.help_url | default: routes.root_url }}">Help &amp; FAQ</a><a href="{{ routes.account_url }}">Order status</a></div></details><details class="utility-menu desktop-only"><summary>{{ localization.country.iso_code }} / {{ localization.country.currency.iso_code }}</summary><div>{% assign header_locale_id = section.id | append: '-header' %}{% render 'localization', id: header_locale_id %}</div></details><a href="{{ routes.cart_url }}" aria-label="Cart, {{ cart.item_count }} items">Cart <span class="cart-count" data-cart-count>{{ cart.item_count }}</span></a></div>
+</div></header>{% render 'predictive-search-overlay', section: section %}
+{% schema %}
+{
+  "name": "Site header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Navigation",
+      "default": "main-menu"
+    },
+    {
+      "type": "url",
+      "id": "help_url",
+      "label": "Help page"
+    }
+  ]
+}
+{% endschema %}

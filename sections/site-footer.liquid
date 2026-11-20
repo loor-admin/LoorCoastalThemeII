@@ -1,0 +1,33 @@
+<footer class="site-footer"><div class="container"><div class="footer-grid"><div><a class="site-logo" href="{{ routes.root_url }}">{{ shop.name | escape }}</a><p>{{ section.settings.text | escape }}</p></div>{% for block in section.blocks %}<div {{ block.shopify_attributes }}><details class="footer-accordion"><summary>{{ block.settings.heading | escape }}</summary><ul>{% for link in block.settings.menu.links %}<li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>{% endfor %}</ul></details></div>{% endfor %}</div><div class="footer-bottom">{% render 'localization', id: section.id %}<p>© {{ 'now' | date: '%Y' }} {{ shop.name | escape }}</p><ul class="payments" aria-label="Accepted payment methods">{% for type in shop.enabled_payment_types %}<li>{{ type | payment_type_svg_tag: class: 'payment-icon' }}</li>{% endfor %}</ul><div class="legal-links">{% for policy in shop.policies %}{% if policy != blank %}<a href="{{ policy.url }}">{{ policy.title | escape }}</a>{% endif %}{% endfor %}</div></div></div></footer>
+{% schema %}
+{
+  "name": "Site footer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Description",
+      "default": "A brighter point of view."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Link column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Explore"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

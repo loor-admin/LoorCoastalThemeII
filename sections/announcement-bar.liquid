@@ -1,0 +1,39 @@
+<div class="announcement{% if section.settings.dark %} announcement--dark{% endif %}">
+  <div class="announcement__inner"><span>{{ section.settings.text | escape }}</span>{% if section.settings.link != blank %}<a href="{{ section.settings.link }}">{{ section.settings.link_label | escape }}</a>{% endif %}{% if section.settings.terms != blank %}<button type="button" class="text-button" data-open-dialog="terms-{{ section.id }}">Terms</button>{% endif %}</div>
+</div>
+{% if section.settings.terms != blank %}<dialog id="terms-{{ section.id }}" class="modal" aria-labelledby="terms-title-{{ section.id }}"><div class="modal__head"><h2 id="terms-title-{{ section.id }}">Offer terms</h2><button type="button" data-close-dialog aria-label="Close terms">×</button></div><div class="rte">{{ section.settings.terms }}</div></dialog>{% endif %}
+{% schema %}
+{
+  "name": "Announcement bar",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Offer text",
+      "default": "A little sunshine for every day."
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Collection link"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Shop now"
+    },
+    {
+      "type": "richtext",
+      "id": "terms",
+      "label": "Offer terms"
+    },
+    {
+      "type": "checkbox",
+      "id": "dark",
+      "label": "Dark background",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

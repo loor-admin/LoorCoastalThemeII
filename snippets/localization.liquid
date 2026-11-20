@@ -1,0 +1,3 @@
+{% if localization.available_countries.size > 1 %}
+  {% form 'localization', class: 'localization-form' %}<label for="Country-{{ id }}">Country / region</label><select id="Country-{{ id }}" name="country_code" data-localization-select>{% for country in localization.available_countries %}<option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>{{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})</option>{% endfor %}</select><button type="submit">Update</button>{% endform %}
+{% endif %}

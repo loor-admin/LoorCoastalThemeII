@@ -1,0 +1,49 @@
+<section class="section fit-selector"><div class="container"><div class="section-heading"><div><p class="eyebrow">Find your frame</p><h2>{{ section.settings.heading | escape }}</h2></div><p>{{ section.settings.text | escape }}</p></div><div class="fit-grid">{% for block in section.blocks %}<a class="fit-card" href="{{ block.settings.link | default: routes.all_products_collection_url }}" {{ block.shopify_attributes }}>{% if block.settings.image != blank %}{{ block.settings.image | image_url: width: 600 | image_tag: widths: '200, 300, 450, 600', sizes: '(min-width: 750px) 20vw, 45vw', loading: 'lazy' }}{% else %}{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}{% endif %}<span>{{ block.settings.heading | escape }} <span aria-hidden="true">↗</span></span></a>{% endfor %}</div></div></section>
+{% schema %}
+{
+  "name": "Fit selector",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Find your fit"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Description",
+      "default": "Find a shape that feels like you."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "fit",
+      "name": "Fit or shape",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Label",
+          "default": "Square"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Filtered collection link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fit selector"
+    }
+  ]
+}
+{% endschema %}
