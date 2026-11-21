@@ -1,0 +1,33 @@
+{{ 'product-page.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-page.js' | asset_url }}" defer></script>
+{% assign current_variant = product.selected_or_first_available_variant %}
+<nav class="pdp-breadcrumb" aria-label="Breadcrumb"><a href="{{ routes.root_url }}">Home</a><span>/</span>{% if collection %}<a href="{{ collection.url }}">{{ collection.title | escape }}</a><span>/</span>{% endif %}<strong>{{ product.title | escape }}</strong></nav>
+<section class="pdp" data-product-page>
+  <div class="pdp-gallery" data-gallery>
+    <div class="pdp-gallery__stage">
+      {% for media in product.media %}<div class="pdp-gallery__slide" data-slide {% unless forloop.first %}hidden{% endunless %}>{{ media.preview_image | image_url: width: 1600 | image_tag: loading: 'lazy', widths: '550, 800, 1200, 1600', alt: media.alt }}</div>{% else %}<div class="pdp-gallery__slide" data-slide><img src="{{ 'figma-pdp-0.png' | asset_url }}" alt="{{ product.title | escape }}"></div>{% endfor %}
+      <button type="button" class="pdp-gallery__arrow prev" data-gallery-prev aria-label="Previous image">←</button><button type="button" class="pdp-gallery__arrow next" data-gallery-next aria-label="Next image">→</button><span class="pdp-gallery__count" data-gallery-count>1 / {{ product.media.size | at_least: 1 }}</span>
+    </div>
+    <div class="pdp-gallery__thumbs">{% for media in product.media %}<button type="button" class="pdp-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="View image {{ forloop.index }}">{{ media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: media.alt }}</button>{% else %}<button type="button" class="pdp-gallery__thumb is-active" data-thumb="0" aria-label="View image 1"><img src="{{ 'figma-pdp-0.png' | asset_url }}" alt=""></button>{% endfor %}</div>
+  </div>
+  <div class="pdp-info">
+    {% if section.settings.eyebrow != blank %}<p class="pdp-eyebrow">{{ section.settings.eyebrow | escape }}</p>{% endif %}
+    <h1>{{ product.title | escape }}</h1>
+    {% if product.metafields.custom.subtitle.value != blank %}<p class="pdp-subtitle">{{ product.metafields.custom.subtitle.value | escape }}</p>{% endif %}
+    <p class="pdp-price" data-price>{{ current_variant.price | money }}</p>
+    <div class="pdp-description">{{ product.description }}</div>
+    {% form 'product', product, class: 'pdp-form', data-product-form: '' %}
+      {% unless product.has_only_default_variant %}{% for option in product.options_with_values %}<fieldset class="pdp-option"><legend>{{ option.name | escape }} <span data-option-label="{{ forloop.index0 }}">{{ option.selected_value | escape }}</span></legend><div class="pdp-option__values">{% assign option_index = forloop.index0 %}{% for value in option.values %}<label><input type="radio" name="option-{{ option_index }}" value="{{ value | escape }}" data-option-index="{{ option_index }}" {% if option.selected_value == value %}checked{% endif %}><span>{{ value | escape }}</span></label>{% endfor %}</div></fieldset>{% endfor %}{% endunless %}
+      <label class="pdp-variant-label" for="Variant-{{ section.id }}">Variant</label><select id="Variant-{{ section.id }}" name="id" data-variant-select>{% for variant in product.variants %}<option value="{{ variant.id }}" {% if variant == current_variant %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>{{ variant.title | escape }} — {{ variant.price | money }}</option>{% endfor %}</select>
+      <div class="pdp-purchase"><div class="pdp-quantity"><button type="button" data-quantity-change="-1" aria-label="Decrease quantity">−</button><input type="number" name="quantity" value="1" min="1" aria-label="Quantity"><button type="button" data-quantity-change="1" aria-label="Increase quantity">+</button></div><button class="pdp-add" type="submit" data-add {% unless current_variant.available %}disabled{% endunless %}>{% if current_variant.available %}Add to bag — {{ current_variant.price | money }}{% else %}Sold out{% endif %}</button></div>
+      <p class="pdp-stock" data-stock>{% if current_variant.available %}● &nbsp; In stock · Dispatches in 1–2 business days{% endif %}</p>
+    {% endform %}
+    <script type="application/json" data-variants>{{ product.variants | json }}</script>
+    <div class="pdp-perks"><span>✧<br>Polarized lenses</span><span>◉<br>UV protection</span><span>♧<br>Free shipping over $75</span><span>✦<br>Easy returns</span></div>
+  </div>
+</section>
+<section class="pdp-details"><p class="pdp-eyebrow">Engineered for everyday</p><h2>Details that<br>do more.</h2><div class="pdp-features"><article><span>✳</span><h3>Polarized clarity</h3><p>Cuts glare and sharpens contrast without shifting color.</p></article><article><span>◇</span><h3>Plant-based acetate</h3><p>Durable, lightweight frames made with lower-impact materials.</p></article><article><span>✧</span><h3>Seven-barrel hinges</h3><p>Reinforced hardware tested for smooth, reliable movement.</p></article><article><span>♡</span><h3>All-day comfort</h3><p>Balanced temples and sculpted nose support prevent pressure.</p></article></div></section>
+<section class="pdp-fit"><div><p class="pdp-eyebrow">One shape, three proportions</p><h2>Find your fit.</h2>{% if section.settings.fit_guide != blank %}<a href="{{ section.settings.fit_guide }}">Open full fit guide →</a>{% endif %}</div><div class="pdp-fit__sizes"><span>Small</span><span>Standard</span><span>Large</span></div></section>
+{% assign recommendations_collection = section.settings.collection | default: collection %}{% if recommendations_collection != blank %}<section class="pdp-recommendations"><p class="pdp-eyebrow">Keep looking</p><h2>You may also like</h2><div class="pdp-recommendations__grid">{% for recommendation in recommendations_collection.products limit: 5 %}{% if recommendation.id != product.id %}<article><a href="{{ recommendation.url }}">{% if recommendation.featured_image %}{{ recommendation.featured_image | image_url: width: 700 | image_tag: loading: 'lazy' }}{% endif %}<h3>{{ recommendation.title | escape }}</h3><p>{{ recommendation.price | money }}</p></a></article>{% endif %}{% endfor %}</div></section>{% endif %}
+{% schema %}{"name":"Product page","settings":[{"type":"text","id":"eyebrow","label":"Product eyebrow","default":"Core collection · Polarized"},{"type":"url","id":"fit_guide","label":"Fit guide link"},{"type":"collection","id":"collection","label":"Recommendations collection"}],"presets":[{"name":"Product page"}]}{% endschema %}
+
