@@ -1,0 +1,534 @@
+{{ 'product-page.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'main-product.js' | asset_url }}" defer></script>
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+{%- assign product_form_id = 'product-form-' | append: section.id -%}
+<div class="main-product" data-main-product data-section-id="{{ section.id }}" data-money-format="{{ shop.money_format | escape }}" data-add-label="{{ section.settings.add_label | escape }}" data-sold-label="{{ section.settings.sold_out_label | escape }}" data-unavailable-label="{{ section.settings.unavailable_label | escape }}">
+{% if section.settings.show_breadcrumbs %}<nav class="pdp-breadcrumb" aria-label="{{ section.settings.home_label | escape }}"><a href="{{ routes.root_url }}">{{ section.settings.home_label | escape }}</a>{% if collection %}<span aria-hidden="true">/</span><a href="{{ collection.url }}">{{ collection.title | escape }}</a>{% endif %}<span aria-hidden="true">/</span><strong>{{ product.title | escape }}</strong></nav>{% endif %}
+<div class="pdp">
+  <div class="pdp-gallery{% if section.settings.gallery_layout == 'stacked' %} pdp-gallery--stacked{% endif %}" data-gallery>
+    <div class="pdp-gallery__stage">
+      {% for media in product.media %}<div class="pdp-gallery__slide" data-slide {% if section.settings.gallery_layout == 'carousel' and forloop.first == false %}hidden{% endif %} data-media-id="{{ media.id }}">{% case media.media_type %}{% when 'image' %}{{ media | image_url: width: 1600 | image_tag: widths: '550, 800, 1200, 1600', loading: 'lazy' }}{% when 'video' %}{{ media | video_tag: controls: true }}{% when 'external_video' %}{{ media | external_video_tag }}{% when 'model' %}{{ media | model_viewer_tag }}{% endcase %}</div>{% else %}{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}{% endfor %}
+      {% if section.settings.gallery_layout == 'carousel' and product.media.size > 1 %}<button type="button" class="pdp-gallery__arrow prev" data-gallery-prev aria-label="{{ section.settings.gallery_previous_label | escape }}">←</button><button type="button" class="pdp-gallery__arrow next" data-gallery-next aria-label="{{ section.settings.gallery_next_label | escape }}">→</button><span class="pdp-gallery__count" data-gallery-count>1 / {{ product.media.size }}</span>{% endif %}
+    </div>
+    {% if section.settings.gallery_layout == 'carousel' and product.media.size > 1 %}<div class="pdp-gallery__thumbs">{% for media in product.media %}<button type="button" class="pdp-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="{{ section.settings.gallery_view_label | escape }} {{ forloop.index }}">{{ media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: media.alt }}</button>{% endfor %}</div>{% endif %}
+  </div>
+  <div class="pdp-info{% if section.settings.enable_sticky_buy_box %} pdp-info--sticky{% endif %}">
+    {% form 'product', product, id: product_form_id, class: 'pdp-form', data-product-form: '' %}
+      <label class="pdp-variant-label" for="Variant-{{ section.id }}">{{ section.settings.variant_label | escape }}</label><select id="Variant-{{ section.id }}" name="id" data-variant-select>{% for variant in product.variants %}<option value="{{ variant.id }}" {% if variant == selected_variant %}selected{% endif %}>{{ variant.title | escape }} — {{ variant.price | money }}{% unless variant.available %} — {{ section.settings.sold_out_label | escape }}{% endunless %}</option>{% endfor %}</select>
+      {% assign below_started = false %}
+      {% for block in section.blocks %}
+        {% case block.type %}
+          {% when 'tech_spec_card', 'dimensions_schematic', 'fit_comparison', 'recommendations', 'reviews_anchor' %}{% assign below_started = true %}
+          {% when 'eyebrow_and_title' %}<div {{ block.shopify_attributes }}>{% if section.settings.product_eyebrow != blank %}<p class="pdp-eyebrow">{{ section.settings.product_eyebrow | escape }}</p>{% endif %}<h1>{{ product.title | escape }}</h1>{% if section.settings.show_rating_anchor and product.metafields.reviews.rating.value != blank %}<a class="pdp-rating" href="#{{ section.settings.reviews_anchor_id | escape }}">{{ product.metafields.reviews.rating.value.rating }} / {{ product.metafields.reviews.rating.value.scale_max }}{% if product.metafields.reviews.rating_count.value != blank %} · {{ product.metafields.reviews.rating_count.value }} {{ section.settings.reviews_link_label | escape }}{% endif %}</a>{% endif %}</div>
+          {% when 'price_and_installments' %}<div {{ block.shopify_attributes }}><p class="pdp-price"><span data-price>{{ selected_variant.price | money }}</span> <s data-compare {% unless selected_variant.compare_at_price > selected_variant.price %}hidden{% endunless %}>{% if selected_variant.compare_at_price > selected_variant.price %}{{ selected_variant.compare_at_price | money }}{% endif %}</s> <span class="pdp-sale" data-sale {% unless selected_variant.compare_at_price > selected_variant.price %}hidden{% endunless %}>{{ section.settings.sale_label | escape }}</span></p>{% if block.settings.installment_subtext != blank %}<div class="pdp-installments">{{ block.settings.installment_subtext }}</div>{% endif %}</div>
+          {% when 'short_description' %}<div class="pdp-description" {{ block.shopify_attributes }}>{% if block.settings.description_source != blank %}{{ block.settings.description_source }}{% else %}{{ product.description }}{% endif %}</div>
+          {% when 'variant_picker' %}{% unless product.has_only_default_variant %}<div data-picker {{ block.shopify_attributes }}>{% for option in product.options_with_values %}{% assign option_index = forloop.index0 %}<fieldset class="pdp-option"><legend>{{ option.name | escape }} <span data-option-label="{{ option_index }}">{{ option.selected_value | escape }}</span></legend>{% assign option_name = option.name | downcase %}{% assign size_name = block.settings.size_option_name | downcase %}{% assign color_name = block.settings.color_option_name | downcase %}{% if option_name == size_name and block.settings.show_size_guide_inline and section.settings.fit_guide_link != blank %}<a class="pdp-fit-link" href="{{ section.settings.fit_guide_link }}">{{ section.settings.fit_guide_label | escape }}</a>{% endif %}{% if block.settings.picker_type == 'dropdowns' %}<select data-option-index="{{ option_index }}" aria-label="{{ option.name | escape }}">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}<div class="pdp-option__values{% if option_name == color_name %} pdp-option__values--color{% endif %}">{% for value in option.values %}<label><input type="radio" name="option-{{ section.id }}-{{ option_index }}" value="{{ value | escape }}" data-option-index="{{ option_index }}" {% if option.selected_value == value %}checked{% endif %}><span>{% if option_name == color_name and value.swatch.color != blank %}<i style="--swatch-color: {{ value.swatch.color }}"></i>{% endif %}{{ value | escape }}</span></label>{% endfor %}</div>{% endif %}</fieldset>{% endfor %}</div>{% endunless %}
+          {% when 'buy_buttons' %}<div {{ block.shopify_attributes }}><div class="pdp-purchase">{% if block.settings.show_quantity_selector %}<div class="pdp-quantity"><button type="button" data-quantity-change="-1" aria-label="{{ section.settings.quantity_label | escape }} −">−</button><input type="number" name="quantity" value="1" min="1" aria-label="{{ section.settings.quantity_label | escape }}"><button type="button" data-quantity-change="1" aria-label="{{ section.settings.quantity_label | escape }} +">+</button></div>{% endif %}<button class="pdp-add" type="submit" data-add data-show-price="{{ block.settings.show_price_in_button }}" {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% if block.settings.show_price_in_button %} — {{ selected_variant.price | money }}{% endif %}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% if block.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}</div>
+          {% when 'trust_badges' %}<div class="pdp-perks" {{ block.shopify_attributes }}>{% for i in (1..4) %}{% assign icon_key = 'badge_' | append: i | append: '_icon' %}{% assign text_key = 'badge_' | append: i | append: '_text' %}{% assign icon = block.settings[icon_key] %}{% assign label = block.settings[text_key] %}{% if icon != blank or label != blank %}<span>{% if icon != blank %}{{ icon | image_url: width: 80 | image_tag: loading: 'lazy', alt: '' }}{% endif %}{{ label | escape }}</span>{% endif %}{% endfor %}</div>
+          {% when '@app' %}{% unless below_started %}<div {{ block.shopify_attributes }}>{% render block %}</div>{% endunless %}
+        {% endcase %}
+      {% endfor %}
+    {% endform %}
+    <script type="application/json" data-variants>{{ product.variants | json }}</script>
+  </div>
+</div>
+{% assign below_started = false %}{% assign specs_open = false %}
+{% for block in section.blocks %}
+  {% if block.type == 'tech_spec_card' %}
+    {% unless specs_open %}<section class="pdp-details"><h2>{{ section.settings.specs_heading | escape }}</h2><div class="pdp-features">{% assign specs_open = true %}{% endunless %}
+    <article {{ block.shopify_attributes }}>{% if block.settings.spec_icon != blank %}{{ block.settings.spec_icon | image_url: width: 100 | image_tag: loading: 'lazy', alt: '' }}{% endif %}<h3>{{ block.settings.spec_title | escape }}</h3><div>{{ block.settings.spec_description }}</div></article>{% assign below_started = true %}
+  {% else %}
+    {% if specs_open %}</div></section>{% assign specs_open = false %}{% endif %}
+    {% case block.type %}
+      {% when 'dimensions_schematic' %}{% assign below_started = true %}<section class="pdp-dimensions" {{ block.shopify_attributes }}>{% if block.settings.diagram_image != blank %}{{ block.settings.diagram_image | image_url: width: 1400 | image_tag: loading: 'lazy' }}{% endif %}<div class="pdp-dimensions__values">{% for i in (1..4) %}{% assign label_key = 'measurement_' | append: i | append: '_label' %}{% assign value_key = 'measurement_' | append: i | append: '_value' %}{% if block.settings[label_key] != blank or block.settings[value_key] != blank %}<div><span>{{ block.settings[label_key] | escape }}</span> <strong>{{ block.settings[value_key] | escape }}</strong></div>{% endif %}{% endfor %}</div></section>
+      {% when 'fit_comparison' %}{% assign below_started = true %}{% if section.settings.fit_comparison_image != blank %}<section class="pdp-fit" {{ block.shopify_attributes }}><div><h2>{{ section.settings.fit_heading | escape }}</h2>{% if section.settings.fit_guide_link != blank %}<a href="{{ section.settings.fit_guide_link }}">{{ section.settings.fit_guide_label | escape }}</a>{% endif %}</div>{{ section.settings.fit_comparison_image | image_url: width: 1200 | image_tag: loading: 'lazy' }}</section>{% endif %}
+      {% when 'recommendations' %}{% assign below_started = true %}<div {{ block.shopify_attributes }} data-recommendations data-use-api="{% if section.settings.recommendations_collection == blank %}true{% else %}false{% endif %}" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.recommendations_limit }}&intent=related">{% render 'main-product-recommendations', section: section, product: product, recommendations: recommendations %}</div>
+      {% when 'reviews_anchor' %}{% assign below_started = true %}<section class="pdp-reviews" id="{{ section.settings.reviews_anchor_id | escape }}" {{ block.shopify_attributes }}><h2>{{ section.settings.reviews_section_heading | escape }}</h2></section>
+      {% when '@app' %}{% if below_started %}<div class="pdp-app-block" {{ block.shopify_attributes }}>{% render block %}</div>{% endif %}
+    {% endcase %}
+  {% endif %}
+{% endfor %}{% if specs_open %}</div></section>{% endif %}
+{% if section.settings.enable_mobile_sticky_bar %}<div class="pdp-sticky-bar" data-sticky-bar>{% if product.featured_image %}{{ product.featured_image | image_url: width: 120 | image_tag: loading: 'lazy', alt: product.featured_image.alt }}{% endif %}<div><strong>{{ product.title | escape }}</strong><span data-sticky-price>{{ selected_variant.price | money }}</span></div><button type="submit" form="{{ product_form_id }}" data-sticky-add {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% endif %}
+</div>
+{% schema %}
+{
+  "name": "Product page",
+  "settings": [
+    {
+      "type": "select",
+      "id": "gallery_layout",
+      "label": "Gallery layout",
+      "options": [
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        },
+        {
+          "value": "carousel",
+          "label": "Thumbnail carousel"
+        }
+      ],
+      "default": "carousel"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_buy_box",
+      "label": "Sticky buy box",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_mobile_sticky_bar",
+      "label": "Mobile sticky bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_eyebrow",
+      "label": "Product eyebrow",
+      "info": "Connect a product text metafield or product type."
+    },
+    {
+      "type": "text",
+      "id": "fit_guide_label",
+      "label": "Fit guide label",
+      "default": "Size & Fit Guide"
+    },
+    {
+      "type": "url",
+      "id": "fit_guide_link",
+      "label": "Fit guide link",
+      "info": "Connect a product URL metafield."
+    },
+    {
+      "type": "image_picker",
+      "id": "fit_comparison_image",
+      "label": "Fit comparison image",
+      "info": "Connect a product file metafield."
+    },
+    {
+      "type": "text",
+      "id": "recommendations_heading",
+      "label": "Recommendations heading",
+      "default": "YOU MAY ALSO LIKE"
+    },
+    {
+      "type": "collection",
+      "id": "recommendations_collection",
+      "label": "Recommendations collection",
+      "info": "Connect a product collection reference metafield."
+    },
+    {
+      "type": "range",
+      "id": "recommendations_limit",
+      "label": "Recommendations limit",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating_anchor",
+      "label": "Show rating anchor",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "reviews_section_heading",
+      "label": "Reviews heading",
+      "default": "CUSTOMER REVIEWS"
+    },
+    {
+      "type": "text",
+      "id": "reviews_anchor_id",
+      "label": "Reviews anchor ID",
+      "default": "shopify-product-reviews",
+      "info": "Use the ID of the review destination, without #."
+    },
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "Add to bag label",
+      "default": "Add to bag"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Sold out"
+    },
+    {
+      "type": "text",
+      "id": "unavailable_label",
+      "label": "Unavailable label",
+      "default": "Unavailable"
+    },
+    {
+      "type": "text",
+      "id": "quantity_label",
+      "label": "Quantity label",
+      "default": "Quantity"
+    },
+    {
+      "type": "text",
+      "id": "variant_label",
+      "label": "Variant label",
+      "default": "Variant"
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Breadcrumb home label",
+      "default": "Home"
+    },
+    {
+      "type": "text",
+      "id": "gallery_previous_label",
+      "label": "Previous image label",
+      "default": "Previous image"
+    },
+    {
+      "type": "text",
+      "id": "gallery_next_label",
+      "label": "Next image label",
+      "default": "Next image"
+    },
+    {
+      "type": "text",
+      "id": "gallery_view_label",
+      "label": "View image label",
+      "default": "View image"
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "Sale label",
+      "default": "Sale"
+    },
+    {
+      "type": "text",
+      "id": "specs_heading",
+      "label": "Specifications heading",
+      "default": "DETAILS THAT DO MORE."
+    },
+    {
+      "type": "text",
+      "id": "fit_heading",
+      "label": "Fit comparison heading",
+      "default": "FIND YOUR FIT."
+    },
+    {
+      "type": "text",
+      "id": "reviews_link_label",
+      "label": "Reviews link label",
+      "default": "Reviews"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow_and_title",
+      "name": "Eyebrow and title",
+      "settings": [],
+      "limit": 1
+    },
+    {
+      "type": "price_and_installments",
+      "name": "Price and installments",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "installment_subtext",
+          "label": "Installment text",
+          "info": "Connect a product text metafield."
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "short_description",
+      "name": "Short description",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "description_source",
+          "label": "Short description",
+          "info": "Connect a product rich text metafield; otherwise the product description is used."
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "variant_picker",
+      "name": "Variant picker",
+      "settings": [
+        {
+          "type": "select",
+          "id": "picker_type",
+          "label": "Picker type",
+          "options": [
+            {
+              "value": "pills",
+              "label": "Swatches + pills"
+            },
+            {
+              "value": "dropdowns",
+              "label": "Dropdowns"
+            }
+          ],
+          "default": "pills"
+        },
+        {
+          "type": "text",
+          "id": "color_option_name",
+          "label": "Color option name",
+          "default": "Color"
+        },
+        {
+          "type": "text",
+          "id": "size_option_name",
+          "label": "Size option name",
+          "default": "Size"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_size_guide_inline",
+          "label": "Show size guide inline",
+          "default": true
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "buy_buttons",
+      "name": "Buy buttons",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_quantity_selector",
+          "label": "Show quantity selector",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_price_in_button",
+          "label": "Show price in button",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_dynamic_checkout",
+          "label": "Show dynamic checkout",
+          "default": false
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "trust_badges",
+      "name": "Trust badges",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "badge_1_icon",
+          "label": "Badge 1 icon",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "badge_1_text",
+          "label": "Badge 1 text",
+          "info": "Connect a product text metafield."
+        },
+        {
+          "type": "image_picker",
+          "id": "badge_2_icon",
+          "label": "Badge 2 icon",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "badge_2_text",
+          "label": "Badge 2 text",
+          "info": "Connect a product text metafield."
+        },
+        {
+          "type": "image_picker",
+          "id": "badge_3_icon",
+          "label": "Badge 3 icon",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "badge_3_text",
+          "label": "Badge 3 text",
+          "info": "Connect a product text metafield."
+        },
+        {
+          "type": "image_picker",
+          "id": "badge_4_icon",
+          "label": "Badge 4 icon",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "badge_4_text",
+          "label": "Badge 4 text",
+          "info": "Connect a product text metafield."
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "tech_spec_card",
+      "name": "Technical spec card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "spec_icon",
+          "label": "Icon",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "spec_title",
+          "label": "Title",
+          "info": "Connect a product text metafield."
+        },
+        {
+          "type": "inline_richtext",
+          "id": "spec_description",
+          "label": "Description",
+          "info": "Connect a product text metafield."
+        }
+      ],
+      "limit": 4
+    },
+    {
+      "type": "dimensions_schematic",
+      "name": "Dimensions schematic",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "diagram_image",
+          "label": "Diagram image",
+          "info": "Connect a product file metafield."
+        },
+        {
+          "type": "text",
+          "id": "measurement_1_label",
+          "label": "Measurement 1 label"
+        },
+        {
+          "type": "text",
+          "id": "measurement_1_value",
+          "label": "Measurement 1 value",
+          "info": "Connect a product measurement or text metafield."
+        },
+        {
+          "type": "text",
+          "id": "measurement_2_label",
+          "label": "Measurement 2 label"
+        },
+        {
+          "type": "text",
+          "id": "measurement_2_value",
+          "label": "Measurement 2 value",
+          "info": "Connect a product measurement or text metafield."
+        },
+        {
+          "type": "text",
+          "id": "measurement_3_label",
+          "label": "Measurement 3 label"
+        },
+        {
+          "type": "text",
+          "id": "measurement_3_value",
+          "label": "Measurement 3 value",
+          "info": "Connect a product measurement or text metafield."
+        },
+        {
+          "type": "text",
+          "id": "measurement_4_label",
+          "label": "Measurement 4 label"
+        },
+        {
+          "type": "text",
+          "id": "measurement_4_value",
+          "label": "Measurement 4 value",
+          "info": "Connect a product measurement or text metafield."
+        }
+      ],
+      "limit": 1
+    },
+    {
+      "type": "fit_comparison",
+      "name": "Fit comparison",
+      "settings": [],
+      "limit": 1
+    },
+    {
+      "type": "recommendations",
+      "name": "Recommendations",
+      "settings": [],
+      "limit": 1
+    },
+    {
+      "type": "reviews_anchor",
+      "name": "Reviews anchor",
+      "settings": [],
+      "limit": 1
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product page",
+      "blocks": [
+        {
+          "type": "eyebrow_and_title"
+        },
+        {
+          "type": "price_and_installments"
+        },
+        {
+          "type": "short_description"
+        },
+        {
+          "type": "variant_picker"
+        },
+        {
+          "type": "buy_buttons"
+        },
+        {
+          "type": "trust_badges"
+        },
+        {
+          "type": "tech_spec_card"
+        },
+        {
+          "type": "dimensions_schematic"
+        },
+        {
+          "type": "fit_comparison"
+        },
+        {
+          "type": "recommendations"
+        },
+        {
+          "type": "reviews_anchor"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
+

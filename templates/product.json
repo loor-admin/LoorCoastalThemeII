@@ -1,1 +1,70 @@
-{"sections":{"main":{"type":"coastal-product"}},"order":["main"]}
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "b0": {
+          "type": "eyebrow_and_title",
+          "settings": {}
+        },
+        "b1": {
+          "type": "price_and_installments",
+          "settings": {}
+        },
+        "b2": {
+          "type": "short_description",
+          "settings": {}
+        },
+        "b3": {
+          "type": "variant_picker",
+          "settings": {}
+        },
+        "b4": {
+          "type": "buy_buttons",
+          "settings": {}
+        },
+        "b5": {
+          "type": "trust_badges",
+          "settings": {}
+        },
+        "b6": {
+          "type": "tech_spec_card",
+          "settings": {}
+        },
+        "b7": {
+          "type": "dimensions_schematic",
+          "settings": {}
+        },
+        "b8": {
+          "type": "fit_comparison",
+          "settings": {}
+        },
+        "b9": {
+          "type": "recommendations",
+          "settings": {}
+        },
+        "b10": {
+          "type": "reviews_anchor",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "b0",
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8",
+        "b9",
+        "b10"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
