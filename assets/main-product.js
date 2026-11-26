@@ -18,6 +18,18 @@
       const chosen = inputs.map(el => el.value);
       const variant = chosen.length ? variants.find(v => v.options.every((value, i) => value === chosen[i])) : variants.find(v => String(v.id) === select.value);
       inputs.forEach(el => { const label = form.querySelector(`[data-option-label="${el.dataset.optionIndex}"]`); if (label) label.textContent = el.value; });
+      const subtitle = root.querySelector('[data-product-subtitle]');
+      if (subtitle) {
+        const getValue = (index, fallback) => {
+          const position = Number(index);
+          if (position < 0) return fallback;
+          const input = inputs.find(el => Number(el.dataset.optionIndex) === position);
+          return input ? input.value : (variant?.options[position] || '');
+        };
+        const parts = [getValue(subtitle.dataset.colorIndex, subtitle.dataset.colorFallback), getValue(subtitle.dataset.lensIndex, subtitle.dataset.lensFallback)].filter(Boolean);
+        subtitle.textContent = parts.join(' / ');
+        subtitle.hidden = parts.length === 0;
+      }
       if (variant) select.value = String(variant.id);
       const available = !!variant && variant.available;
       const stock = root.querySelector('[data-stock]'); if (stock) stock.hidden = !available;
