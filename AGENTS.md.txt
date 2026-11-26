@@ -1,0 +1,10 @@
+# Shopify theme instructions
+
+- Follow the existing theme structure and coding conventions.
+- Use Shopify's Liquid product reference:
+  https://shopify.dev/docs/api/liquid/objects/product
+- Verify Liquid properties against Shopify documentation.
+- Format prices using Shopify money filters.
+- Escape product titles when rendering HTML.
+- Validate Liquid changes and run Shopify Theme Check.
+- Modify only files needed for the requested task.

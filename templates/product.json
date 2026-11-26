@@ -46,11 +46,16 @@
         "b10": {
           "type": "reviews_anchor",
           "settings": {}
+        },
+        "product_details": {
+          "type": "product_details",
+          "settings": {}
         }
       },
       "block_order": [
         "b0",
         "b1",
+        "product_details",
         "b2",
         "b3",
         "b4",
