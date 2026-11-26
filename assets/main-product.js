@@ -26,7 +26,8 @@
           const input = inputs.find(el => Number(el.dataset.optionIndex) === position);
           return input ? input.value : (variant?.options[position] || '');
         };
-        const parts = [getValue(subtitle.dataset.colorIndex, subtitle.dataset.colorFallback), getValue(subtitle.dataset.lensIndex, subtitle.dataset.lensFallback)].filter(Boolean);
+        const lensColor = getValue(subtitle.dataset.lensIndex, subtitle.dataset.lensFallback);
+        const parts = [getValue(subtitle.dataset.colorIndex, subtitle.dataset.colorFallback), [lensColor, lensColor && subtitle.dataset.lensSuffix].filter(Boolean).join(' ')].filter(Boolean);
         subtitle.textContent = parts.join(' / ');
         subtitle.hidden = parts.length === 0;
       }
