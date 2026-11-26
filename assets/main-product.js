@@ -20,6 +20,7 @@
       inputs.forEach(el => { const label = form.querySelector(`[data-option-label="${el.dataset.optionIndex}"]`); if (label) label.textContent = el.value; });
       if (variant) select.value = String(variant.id);
       const available = !!variant && variant.available;
+      const stock = root.querySelector('[data-stock]'); if (stock) stock.hidden = !available;
       if (variant) {
         root.querySelectorAll('[data-price], [data-sticky-price]').forEach(el => el.textContent = money(variant.price));
         const compare = root.querySelector('[data-compare]'); const sale = root.querySelector('[data-sale]');
