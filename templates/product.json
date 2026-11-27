@@ -57,23 +57,6 @@
             "spec_description": ""
           }
         },
-        "b7": {
-          "type": "dimensions_schematic",
-          "settings": {
-            "measurement_1_label": "",
-            "measurement_1_value": "",
-            "measurement_2_label": "",
-            "measurement_2_value": "",
-            "measurement_3_label": "",
-            "measurement_3_value": "",
-            "measurement_4_label": "",
-            "measurement_4_value": ""
-          }
-        },
-        "b8": {
-          "type": "fit_comparison",
-          "settings": {}
-        },
         "b9": {
           "type": "recommendations",
           "settings": {}
@@ -91,8 +74,6 @@
         "b4",
         "b5",
         "b6",
-        "b7",
-        "b8",
         "b9",
         "b10"
       ],
