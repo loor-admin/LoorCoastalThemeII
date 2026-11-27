@@ -84,10 +84,10 @@
             "corner_styling": "soft",
             "card_spacing": "medium",
             "header_text_color": "#000000",
-            "star_and_reviewer_name_color": "#F9F9F9",
+            "star_and_reviewer_name_color": "#f9f9f9",
             "drop_shadow_color": "#000000",
             "overlay_and_background_color": "#000000",
-            "content_color": "#F9F9F9",
+            "content_color": "#f9f9f9",
             "header_text": "From our customers",
             "show_average_rating": true,
             "rating_display": "default"
@@ -140,9 +140,28 @@
         "fit_heading": "FIND YOUR FIT.",
         "reviews_link_label": "Reviews"
       }
+    },
+    "1795821120485358fe": {
+      "type": "apps",
+      "blocks": {
+        "judge_me_reviews_review_widget_N7t39H": {
+          "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "review_data": "sample_data",
+            "max_width": 1200,
+            "show_shop_reviews": false,
+            "empty_state": "empty_widget"
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_review_widget_N7t39H"
+      ],
+      "settings": {}
     }
   },
   "order": [
-    "main"
+    "main",
+    "1795821120485358fe"
   ]
 }
