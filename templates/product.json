@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -9,19 +18,33 @@
         },
         "b1": {
           "type": "price_and_installments",
-          "settings": {}
+          "settings": {
+            "installment_subtext": ""
+          }
         },
         "b2": {
           "type": "short_description",
-          "settings": {}
+          "settings": {
+            "description_source": ""
+          }
         },
         "b3": {
           "type": "variant_picker",
-          "settings": {}
+          "settings": {
+            "picker_type": "pills",
+            "color_option_name": "Color",
+            "size_option_name": "Size",
+            "show_size_guide_inline": true
+          }
         },
         "b4": {
           "type": "buy_buttons",
-          "settings": {}
+          "settings": {
+            "show_quantity_selector": true,
+            "show_price_in_button": true,
+            "show_dynamic_checkout": false,
+            "stock_message": ""
+          }
         },
         "b5": {
           "type": "trust_badges",
@@ -29,11 +52,23 @@
         },
         "b6": {
           "type": "tech_spec_card",
-          "settings": {}
+          "settings": {
+            "spec_title": "",
+            "spec_description": ""
+          }
         },
         "b7": {
           "type": "dimensions_schematic",
-          "settings": {}
+          "settings": {
+            "measurement_1_label": "",
+            "measurement_1_value": "",
+            "measurement_2_label": "",
+            "measurement_2_value": "",
+            "measurement_3_label": "",
+            "measurement_3_value": "",
+            "measurement_4_label": "",
+            "measurement_4_value": ""
+          }
         },
         "b8": {
           "type": "fit_comparison",
@@ -46,16 +81,11 @@
         "b10": {
           "type": "reviews_anchor",
           "settings": {}
-        },
-        "product_details": {
-          "type": "product_details",
-          "settings": {}
         }
       },
       "block_order": [
         "b0",
         "b1",
-        "product_details",
         "b2",
         "b3",
         "b4",
@@ -66,7 +96,41 @@
         "b9",
         "b10"
       ],
-      "settings": {}
+      "settings": {
+        "gallery_layout": "carousel",
+        "enable_sticky_buy_box": true,
+        "enable_mobile_sticky_bar": true,
+        "show_breadcrumbs": true,
+        "product_eyebrow": "",
+        "product_badge": "",
+        "product_subtitle": "",
+        "lens_suffix": "Lens",
+        "fit_guide_label": "Size & Fit Guide",
+        "fit_close_label": "Close size guide",
+        "fit_small_label": "Small",
+        "fit_standard_label": "Standard",
+        "fit_large_label": "Large",
+        "fit_guide_link": "",
+        "recommendations_heading": "YOU MAY ALSO LIKE",
+        "recommendations_collection": "",
+        "recommendations_limit": 4,
+        "show_rating_anchor": true,
+        "reviews_section_heading": "CUSTOMER REVIEWS",
+        "reviews_anchor_id": "shopify-product-reviews",
+        "add_label": "Add to bag",
+        "sold_out_label": "Sold out",
+        "unavailable_label": "Unavailable",
+        "quantity_label": "Quantity",
+        "variant_label": "Variant",
+        "home_label": "Home",
+        "gallery_previous_label": "Previous image",
+        "gallery_next_label": "Next image",
+        "gallery_view_label": "View image",
+        "sale_label": "Sale",
+        "specs_heading": "DETAILS THAT DO MORE.",
+        "fit_heading": "FIND YOUR FIT.",
+        "reviews_link_label": "Reviews"
+      }
     }
   },
   "order": [
