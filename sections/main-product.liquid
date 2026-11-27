@@ -2,6 +2,7 @@
 <script src="{{ 'main-product.js' | asset_url }}" defer></script>
 {%- assign selected_variant = product.selected_or_first_available_variant -%}
 {%- assign product_form_id = 'product-form-' | append: section.id -%}
+{%- assign fit_guide = product.metafields.custom.fit_guide.value -%}
 <div class="main-product" data-main-product data-section-id="{{ section.id }}" data-money-format="{{ shop.money_format | escape }}" data-add-label="{{ section.settings.add_label | escape }}" data-sold-label="{{ section.settings.sold_out_label | escape }}" data-unavailable-label="{{ section.settings.unavailable_label | escape }}">
 {% if section.settings.show_breadcrumbs %}<nav class="pdp-breadcrumb" aria-label="{{ section.settings.home_label | escape }}"><a href="{{ routes.root_url }}">{{ section.settings.home_label | escape }}</a>{% if collection %}<span aria-hidden="true">/</span><a href="{{ collection.url }}">{{ collection.title | escape }}</a>{% endif %}<span aria-hidden="true">/</span><strong>{{ product.title | escape }}</strong></nav>{% endif %}
 <div class="pdp">
@@ -23,7 +24,7 @@
           {% when 'price_and_installments' %}<div {{ block.shopify_attributes }}><p class="pdp-price"><span data-price>{{ selected_variant.price | money }}</span> <s data-compare {% unless selected_variant.compare_at_price > selected_variant.price %}hidden{% endunless %}>{% if selected_variant.compare_at_price > selected_variant.price %}{{ selected_variant.compare_at_price | money }}{% endif %}</s> <span class="pdp-sale" data-sale {% unless selected_variant.compare_at_price > selected_variant.price %}hidden{% endunless %}>{{ section.settings.sale_label | escape }}</span></p>{% if block.settings.installment_subtext != blank %}<div class="pdp-installments">{{ block.settings.installment_subtext }}</div>{% endif %}</div>
           {% when 'product_details' %}<div {{ block.shopify_attributes }}>{% if block.settings.show_vendor and product.vendor != blank %}<div class="pdp-description"><p>{{ block.settings.vendor_label | escape }}{% if block.settings.vendor_label != blank %}: {% endif %}{{ product.vendor | escape }}</p></div>{% endif %}</div>
           {% when 'short_description' %}<div class="pdp-description" {{ block.shopify_attributes }}>{% if block.settings.description_source != blank %}{{ block.settings.description_source }}{% else %}{{ product.description }}{% endif %}</div>
-          {% when 'variant_picker' %}{% unless product.has_only_default_variant %}<div data-picker {{ block.shopify_attributes }}>{% for option in product.options_with_values %}{% assign option_index = forloop.index0 %}{% assign option_name = option.name | downcase | strip %}{% if option_name == "lens color" or option_name == "lens colour" %}<select data-option-index="{{ option_index }}" hidden aria-hidden="true" tabindex="-1">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}<fieldset class="pdp-option"><legend>{{ option.name | escape }} <span data-option-label="{{ option_index }}">{{ option.selected_value | escape }}</span></legend>{% assign size_name = block.settings.size_option_name | downcase %}{% assign color_name = block.settings.color_option_name | downcase %}{% if option_name == size_name and block.settings.show_size_guide_inline and section.settings.fit_guide_link != blank %}<a class="pdp-fit-link" href="{{ section.settings.fit_guide_link }}">{{ section.settings.fit_guide_label | escape }}</a>{% endif %}{% if block.settings.picker_type == 'dropdowns' %}<select data-option-index="{{ option_index }}" aria-label="{{ option.name | escape }}">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}<div class="pdp-option__values{% if option_name == color_name %} pdp-option__values--color{% elsif option_name == size_name %} pdp-option__values--size{% endif %}">{% for value in option.values %}<label><input type="radio" name="option-{{ section.id }}-{{ option_index }}" value="{{ value | escape }}" data-option-index="{{ option_index }}" {% if option.selected_value == value %}checked{% endif %}><span>{% if option_name == color_name and value.swatch.color != blank %}<i style="--swatch-color: {{ value.swatch.color }}"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% elsif option_name == color_name and value.swatch.image != blank %}<i style="--swatch-image: url({{ value.swatch.image | image_url: width: 64 }})"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% else %}{{ value | escape }}{% endif %}</span></label>{% endfor %}</div>{% endif %}</fieldset>{% endif %}{% endfor %}</div>{% endunless %}
+          {% when 'variant_picker' %}{% unless product.has_only_default_variant %}<div data-picker {{ block.shopify_attributes }}>{% for option in product.options_with_values %}{% assign option_index = forloop.index0 %}{% assign option_name = option.name | downcase | strip %}{% if option_name == "lens color" or option_name == "lens colour" %}<select data-option-index="{{ option_index }}" hidden aria-hidden="true" tabindex="-1">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}{% assign size_name = block.settings.size_option_name | downcase | strip %}{% assign color_name = block.settings.color_option_name | downcase | strip %}<fieldset class="pdp-option"><legend class="pdp-option__header"><span class="pdp-option__heading">{{ option.name | escape }} <span data-option-label="{{ option_index }}">{{ option.selected_value | escape }}</span></span>{% if option_name == size_name and block.settings.show_size_guide_inline and fit_guide != blank %}<button type="button" class="pdp-fit-link" data-fit-open aria-haspopup="dialog" aria-controls="FitGuide-{{ section.id }}">{{ section.settings.fit_guide_label | escape }}</button>{% endif %}</legend>{% if block.settings.picker_type == 'dropdowns' %}<select data-option-index="{{ option_index }}" aria-label="{{ option.name | escape }}">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}<div class="pdp-option__values{% if option_name == color_name %} pdp-option__values--color{% elsif option_name == size_name %} pdp-option__values--size{% endif %}">{% for value in option.values %}<label><input type="radio" name="option-{{ section.id }}-{{ option_index }}" value="{{ value | escape }}" data-option-index="{{ option_index }}" {% if option.selected_value == value %}checked{% endif %}><span>{% if option_name == color_name and value.swatch.color != blank %}<i style="--swatch-color: {{ value.swatch.color }}"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% elsif option_name == color_name and value.swatch.image != blank %}<i style="--swatch-image: url({{ value.swatch.image | image_url: width: 64 }})"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% else %}{{ value | escape }}{% endif %}</span></label>{% endfor %}</div>{% endif %}</fieldset>{% endif %}{% endfor %}</div>{% endunless %}
           {% when 'buy_buttons' %}<div {{ block.shopify_attributes }}><div class="pdp-purchase">{% if block.settings.show_quantity_selector %}<div class="pdp-quantity"><button type="button" data-quantity-change="-1" aria-label="{{ section.settings.quantity_label | escape }} −">−</button><input type="number" name="quantity" value="1" min="1" aria-label="{{ section.settings.quantity_label | escape }}"><button type="button" data-quantity-change="1" aria-label="{{ section.settings.quantity_label | escape }} +">+</button></div>{% endif %}<button class="pdp-add" type="submit" data-add data-show-price="{{ block.settings.show_price_in_button }}" {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% if block.settings.show_price_in_button %} — {{ selected_variant.price | money }}{% endif %}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% if block.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}{% if block.settings.stock_message != blank %}<p class="pdp-stock" data-stock{% unless selected_variant.available %} hidden{% endunless %}><span aria-hidden="true">●</span> {{ block.settings.stock_message | escape }}</p>{% endif %}</div>
           {% when 'trust_badges' %}<div class="pdp-perks" {{ block.shopify_attributes }}>{% for i in (1..4) %}{% assign icon_key = 'badge_' | append: i | append: '_icon' %}{% assign text_key = 'badge_' | append: i | append: '_text' %}{% assign icon = block.settings[icon_key] %}{% assign label = block.settings[text_key] %}{% if icon != blank or label != blank %}<span>{% if icon != blank %}{{ icon | image_url: width: 80 | image_tag: loading: 'lazy', alt: '' }}{% endif %}{{ label | escape }}</span>{% endif %}{% endfor %}</div>
           {% when '@app' %}{% unless below_started %}<div {{ block.shopify_attributes }}>{% render block %}</div>{% endunless %}
@@ -33,6 +34,21 @@
     <script type="application/json" data-variants>{{ product.variants | json }}</script>
   </div>
 </div>
+{% if fit_guide != blank %}
+  <dialog id="FitGuide-{{ section.id }}" class="pdp-fit-dialog" aria-labelledby="FitGuideTitle-{{ section.id }}" data-fit-dialog>
+    <div class="pdp-fit-dialog__header">
+      <h2 id="FitGuideTitle-{{ section.id }}">{{ fit_guide.heading.value | default: section.settings.fit_guide_label | escape }}</h2>
+      <button type="button" class="pdp-fit-dialog__close" data-fit-close aria-label="{{ section.settings.fit_close_label | escape }}" autofocus>×</button>
+    </div>
+    {% if fit_guide.instructions.value != blank %}<div class="pdp-fit-dialog__instructions">{{ fit_guide.instructions | metafield_tag }}</div>{% endif %}
+    {% if fit_guide.diagram.value != blank %}{{ fit_guide.diagram.value | image_url: width: 1200 | image_tag: class: 'pdp-fit-dialog__diagram', loading: 'lazy' }}{% endif %}
+    <dl class="pdp-fit-dialog__measurements">
+      {% if fit_guide.small_measurements.value != blank or fit_guide.small_fit_note.value != blank %}<div><dt>{{ section.settings.fit_small_label | escape }}</dt><dd>{% if fit_guide.small_measurements.value != blank %}<span>{{ fit_guide.small_measurements.value | escape }}</span>{% endif %}{% if fit_guide.small_fit_note.value != blank %}<p>{{ fit_guide.small_fit_note.value | escape }}</p>{% endif %}</dd></div>{% endif %}
+      {% if fit_guide.standard_measurements.value != blank or fit_guide.standard_fit_note.value != blank %}<div><dt>{{ section.settings.fit_standard_label | escape }}</dt><dd>{% if fit_guide.standard_measurements.value != blank %}<span>{{ fit_guide.standard_measurements.value | escape }}</span>{% endif %}{% if fit_guide.standard_fit_note.value != blank %}<p>{{ fit_guide.standard_fit_note.value | escape }}</p>{% endif %}</dd></div>{% endif %}
+      {% if fit_guide.large_measurements.value != blank or fit_guide.large_fit_note.value != blank %}<div><dt>{{ section.settings.fit_large_label | escape }}</dt><dd>{% if fit_guide.large_measurements.value != blank %}<span>{{ fit_guide.large_measurements.value | escape }}</span>{% endif %}{% if fit_guide.large_fit_note.value != blank %}<p>{{ fit_guide.large_fit_note.value | escape }}</p>{% endif %}</dd></div>{% endif %}
+    </dl>
+  </dialog>
+{% endif %}
 {% assign below_started = false %}{% assign specs_open = false %}
 {% for block in section.blocks %}
   {% if block.type == 'tech_spec_card' %}
@@ -118,6 +134,30 @@
       "id": "fit_guide_label",
       "label": "Fit guide label",
       "default": "Size & Fit Guide"
+    },
+    {
+      "type": "text",
+      "id": "fit_close_label",
+      "label": "Close fit guide label",
+      "default": "Close size guide"
+    },
+    {
+      "type": "text",
+      "id": "fit_small_label",
+      "label": "Small fit label",
+      "default": "Small"
+    },
+    {
+      "type": "text",
+      "id": "fit_standard_label",
+      "label": "Standard fit label",
+      "default": "Standard"
+    },
+    {
+      "type": "text",
+      "id": "fit_large_label",
+      "label": "Large fit label",
+      "default": "Large"
     },
     {
       "type": "url",

@@ -4,6 +4,13 @@
     root.dataset.initialized = 'true';
     const form = root.querySelector('[data-product-form]');
     if (!form) return;
+    const fitDialog = root.querySelector('[data-fit-dialog]');
+    const fitTrigger = root.querySelector('[data-fit-open]');
+    if (fitDialog && fitTrigger && typeof fitDialog.showModal === 'function') {
+      fitTrigger.addEventListener('click', () => { if (!fitDialog.open) fitDialog.showModal(); });
+      fitDialog.querySelector('[data-fit-close]').addEventListener('click', () => fitDialog.close());
+      fitDialog.addEventListener('close', () => { if (fitTrigger.isConnected) fitTrigger.focus(); });
+    }
     const select = form.querySelector('[data-variant-select]');
     const variants = JSON.parse(root.querySelector('[data-variants]').textContent);
     const add = form.querySelector('[data-add]');
