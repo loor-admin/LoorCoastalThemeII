@@ -106,7 +106,11 @@
       {% when 'dimensions_schematic' %}{% assign below_started = true %}<section class="pdp-dimensions" {{ block.shopify_attributes }}>{% if block.settings.diagram_image != blank %}{{ block.settings.diagram_image | image_url: width: 1400 | image_tag: loading: 'lazy' }}{% endif %}<div class="pdp-dimensions__values">{% for i in (1..4) %}{% assign label_key = 'measurement_' | append: i | append: '_label' %}{% assign value_key = 'measurement_' | append: i | append: '_value' %}{% if block.settings[label_key] != blank or block.settings[value_key] != blank %}<div><span>{{ block.settings[label_key] | escape }}</span> <strong>{{ block.settings[value_key] | escape }}</strong></div>{% endif %}{% endfor %}</div></section>
       {% when 'fit_comparison' %}{% assign below_started = true %}{% if section.settings.fit_comparison_image != blank %}<section class="pdp-fit" {{ block.shopify_attributes }}><div><h2>{{ section.settings.fit_heading | escape }}</h2>{% if section.settings.fit_guide_link != blank %}<a href="{{ section.settings.fit_guide_link }}">{{ section.settings.fit_guide_label | escape }}</a>{% endif %}</div>{{ section.settings.fit_comparison_image | image_url: width: 1200 | image_tag: loading: 'lazy' }}</section>{% endif %}
       {% when 'recommendations' %}{% assign below_started = true %}<div {{ block.shopify_attributes }} data-recommendations data-use-api="{% if section.settings.recommendations_collection == blank %}true{% else %}false{% endif %}" data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.recommendations_limit }}&intent=related">{% render 'main-product-recommendations', section: section, product: product, recommendations: recommendations %}</div>
-      {% when 'reviews_anchor' %}{% assign below_started = true %}<section class="pdp-reviews" id="{{ section.settings.reviews_anchor_id | escape }}" {{ block.shopify_attributes }}><h2>{{ section.settings.reviews_section_heading | escape }}</h2></section>
+      {% when 'reviews_anchor' %}
+        {% assign below_started = true %}
+        <section class="pdp-reviews" id="{{ section.settings.reviews_anchor_id | escape }}" aria-label="{{ section.settings.reviews_section_heading | escape }}" {{ block.shopify_attributes }}>
+          {% render 'judgeme-product-reviews', product: product %}
+        </section>
       {% when '@app' %}{% if below_started %}<div class="pdp-app-block" {{ block.shopify_attributes }}>{% render block %}</div>{% endif %}
     {% endcase %}
   {% endif %}
