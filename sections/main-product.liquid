@@ -26,7 +26,21 @@
           {% when 'short_description' %}<div class="pdp-description" {{ block.shopify_attributes }}>{% if block.settings.description_source != blank %}{{ block.settings.description_source }}{% else %}{{ product.description }}{% endif %}</div>
           {% when 'variant_picker' %}{% unless product.has_only_default_variant %}<div data-picker {{ block.shopify_attributes }}>{% for option in product.options_with_values %}{% assign option_index = forloop.index0 %}{% assign option_name = option.name | downcase | strip %}{% if option_name == "lens color" or option_name == "lens colour" %}<select data-option-index="{{ option_index }}" hidden aria-hidden="true" tabindex="-1">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}{% assign size_name = block.settings.size_option_name | downcase | strip %}{% assign color_name = block.settings.color_option_name | downcase | strip %}<fieldset class="pdp-option"><legend class="pdp-option__header"><span class="pdp-option__heading">{{ option.name | escape }} <span data-option-label="{{ option_index }}">{{ option.selected_value | escape }}</span></span>{% if option_name == size_name and block.settings.show_size_guide_inline and fit_guide != blank %}<button type="button" class="pdp-fit-link" data-fit-open aria-haspopup="dialog" aria-controls="FitGuide-{{ section.id }}">{{ section.settings.fit_guide_label | escape }}</button>{% endif %}</legend>{% if block.settings.picker_type == 'dropdowns' %}<select data-option-index="{{ option_index }}" aria-label="{{ option.name | escape }}">{% for value in option.values %}<option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>{{ value | escape }}</option>{% endfor %}</select>{% else %}<div class="pdp-option__values{% if option_name == color_name %} pdp-option__values--color{% elsif option_name == size_name %} pdp-option__values--size{% endif %}">{% for value in option.values %}<label><input type="radio" name="option-{{ section.id }}-{{ option_index }}" value="{{ value | escape }}" data-option-index="{{ option_index }}" {% if option.selected_value == value %}checked{% endif %}><span>{% if option_name == color_name and value.swatch.color != blank %}<i style="--swatch-color: {{ value.swatch.color }}"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% elsif option_name == color_name and value.swatch.image != blank %}<i style="--swatch-image: url({{ value.swatch.image | image_url: width: 64 }})"></i><span class="pdp-swatch-label">{{ value | escape }}</span>{% else %}{{ value | escape }}{% endif %}</span></label>{% endfor %}</div>{% endif %}</fieldset>{% endif %}{% endfor %}</div>{% endunless %}
           {% when 'buy_buttons' %}<div {{ block.shopify_attributes }}><div class="pdp-purchase">{% if block.settings.show_quantity_selector %}<div class="pdp-quantity"><button type="button" data-quantity-change="-1" aria-label="{{ section.settings.quantity_label | escape }} −">−</button><input type="number" name="quantity" value="1" min="1" aria-label="{{ section.settings.quantity_label | escape }}"><button type="button" data-quantity-change="1" aria-label="{{ section.settings.quantity_label | escape }} +">+</button></div>{% endif %}<button class="pdp-add" type="submit" data-add data-show-price="{{ block.settings.show_price_in_button }}" {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% if block.settings.show_price_in_button %} — {{ selected_variant.price | money }}{% endif %}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% if block.settings.show_dynamic_checkout %}{{ form | payment_button }}{% endif %}{% if block.settings.stock_message != blank %}<p class="pdp-stock" data-stock{% unless selected_variant.available %} hidden{% endunless %}><span aria-hidden="true">●</span> {{ block.settings.stock_message | escape }}</p>{% endif %}</div>
-          {% when 'trust_badges' %}<div class="pdp-perks" {{ block.shopify_attributes }}>{% for i in (1..4) %}{% assign icon_key = 'badge_' | append: i | append: '_icon' %}{% assign text_key = 'badge_' | append: i | append: '_text' %}{% assign icon = block.settings[icon_key] %}{% assign label = block.settings[text_key] %}{% if icon != blank or label != blank %}<span>{% if icon != blank %}{{ icon | image_url: width: 80 | image_tag: loading: 'lazy', alt: '' }}{% endif %}{{ label | escape }}</span>{% endif %}{% endfor %}</div>
+          {% when 'trust_badges' %}
+            {% assign product_badges = product.metafields.custom.product_badges.value %}
+            {% if product_badges != blank %}
+              <div class="pdp-perks" {{ block.shopify_attributes }}>
+                {% for badge in product_badges limit: 4 %}
+                  {% assign badge_label = badge.label.value | default: badge.title.value %}
+                  <span>
+                    {% if badge.icon.value != blank %}
+                      {{ badge.icon.value | image_url: width: 80 | image_tag: loading: 'lazy', alt: '' }}
+                    {% endif %}
+                    {{ badge_label | escape }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
           {% when '@app' %}{% unless below_started %}<div {{ block.shopify_attributes }}>{% render block %}</div>{% endunless %}
         {% endcase %}
       {% endfor %}
@@ -465,52 +479,8 @@
       "name": "Trust badges",
       "settings": [
         {
-          "type": "image_picker",
-          "id": "badge_1_icon",
-          "label": "Badge 1 icon",
-          "info": "Connect a product file metafield."
-        },
-        {
-          "type": "text",
-          "id": "badge_1_text",
-          "label": "Badge 1 text",
-          "info": "Connect a product text metafield."
-        },
-        {
-          "type": "image_picker",
-          "id": "badge_2_icon",
-          "label": "Badge 2 icon",
-          "info": "Connect a product file metafield."
-        },
-        {
-          "type": "text",
-          "id": "badge_2_text",
-          "label": "Badge 2 text",
-          "info": "Connect a product text metafield."
-        },
-        {
-          "type": "image_picker",
-          "id": "badge_3_icon",
-          "label": "Badge 3 icon",
-          "info": "Connect a product file metafield."
-        },
-        {
-          "type": "text",
-          "id": "badge_3_text",
-          "label": "Badge 3 text",
-          "info": "Connect a product text metafield."
-        },
-        {
-          "type": "image_picker",
-          "id": "badge_4_icon",
-          "label": "Badge 4 icon",
-          "info": "Connect a product file metafield."
-        },
-        {
-          "type": "text",
-          "id": "badge_4_text",
-          "label": "Badge 4 text",
-          "info": "Connect a product text metafield."
+          "type": "paragraph",
+          "content": "Displays up to four badges assigned to the product’s custom.product_badges metafield."
         }
       ],
       "limit": 1
