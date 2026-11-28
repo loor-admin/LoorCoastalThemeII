@@ -6,12 +6,24 @@
 <div class="main-product" data-main-product data-section-id="{{ section.id }}" data-money-format="{{ shop.money_format | escape }}" data-add-label="{{ section.settings.add_label | escape }}" data-sold-label="{{ section.settings.sold_out_label | escape }}" data-unavailable-label="{{ section.settings.unavailable_label | escape }}">
 {% if section.settings.show_breadcrumbs %}<nav class="pdp-breadcrumb" aria-label="{{ section.settings.home_label | escape }}"><a href="{{ routes.root_url }}">{{ section.settings.home_label | escape }}</a>{% if collection %}<span aria-hidden="true">/</span><a href="{{ collection.url }}">{{ collection.title | escape }}</a>{% endif %}<span aria-hidden="true">/</span><strong>{{ product.title | escape }}</strong></nav>{% endif %}
 <div class="pdp">
-  <div class="pdp-gallery{% if section.settings.gallery_layout == 'stacked' %} pdp-gallery--stacked{% endif %}" data-gallery>
+  {%- assign show_gallery_controls = false -%}
+  {%- if section.settings.gallery_layout == 'carousel' and product.media.size > 1 -%}
+    {%- assign show_gallery_controls = true -%}
+  {%- endif -%}
+  <div class="pdp-gallery{% if section.settings.gallery_layout == 'stacked' %} pdp-gallery--stacked{% elsif show_gallery_controls %} pdp-gallery--with-thumbnails{% endif %}" data-gallery>
+    {% if show_gallery_controls %}
+      <div class="pdp-gallery__thumbs">
+        {% for media in product.media %}
+          <button type="button" class="pdp-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="{{ section.settings.gallery_view_label | escape }} {{ forloop.index }}" aria-pressed="{{ forloop.first }}">
+            {{ media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
     <div class="pdp-gallery__stage">
-      {% for media in product.media %}<div class="pdp-gallery__slide" data-slide {% if section.settings.gallery_layout == 'carousel' and forloop.first == false %}hidden{% endif %} data-media-id="{{ media.id }}">{% case media.media_type %}{% when 'image' %}{{ media | image_url: width: 1600 | image_tag: widths: '550, 800, 1200, 1600', loading: 'lazy' }}{% when 'video' %}{{ media | video_tag: controls: true }}{% when 'external_video' %}{{ media | external_video_tag }}{% when 'model' %}{{ media | model_viewer_tag }}{% endcase %}</div>{% else %}{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}{% endfor %}
-      {% if section.settings.gallery_layout == 'carousel' and product.media.size > 1 %}<button type="button" class="pdp-gallery__arrow prev" data-gallery-prev aria-label="{{ section.settings.gallery_previous_label | escape }}">←</button><button type="button" class="pdp-gallery__arrow next" data-gallery-next aria-label="{{ section.settings.gallery_next_label | escape }}">→</button><span class="pdp-gallery__count" data-gallery-count>1 / {{ product.media.size }}</span>{% endif %}
+      {% for media in product.media %}<div class="pdp-gallery__slide" data-slide {% if show_gallery_controls and forloop.first == false %}hidden{% endif %} data-media-id="{{ media.id }}"{% if media.media_type == 'external_video' or media.media_type == 'model' %} style="--pdp-media-ratio: {{ media.aspect_ratio | default: media.preview_image.aspect_ratio | default: 1 }}"{% endif %}>{% case media.media_type %}{% when 'image' %}{{ media | image_url: width: 1600 | image_tag: widths: '550, 800, 1200, 1600', loading: 'lazy' }}{% when 'video' %}{{ media | video_tag: controls: true }}{% when 'external_video' %}{{ media | external_video_tag }}{% when 'model' %}{{ media | model_viewer_tag }}{% endcase %}</div>{% else %}{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}{% endfor %}
+      {% if show_gallery_controls %}<button type="button" class="pdp-gallery__arrow prev" data-gallery-prev aria-label="{{ section.settings.gallery_previous_label | escape }}">←</button><button type="button" class="pdp-gallery__arrow next" data-gallery-next aria-label="{{ section.settings.gallery_next_label | escape }}">→</button><span class="pdp-gallery__count" data-gallery-count>1 / {{ product.media.size }}</span>{% endif %}
     </div>
-    {% if section.settings.gallery_layout == 'carousel' and product.media.size > 1 %}<div class="pdp-gallery__thumbs">{% for media in product.media %}<button type="button" class="pdp-gallery__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="{{ section.settings.gallery_view_label | escape }} {{ forloop.index }}">{{ media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', alt: media.alt }}</button>{% endfor %}</div>{% endif %}
   </div>
   <div class="pdp-info{% if section.settings.enable_sticky_buy_box %} pdp-info--sticky{% endif %}">
     {% form 'product', product, id: product_form_id, class: 'pdp-form', data-product-form: '' %}
