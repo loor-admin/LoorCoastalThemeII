@@ -10,7 +10,24 @@
   {%- if section.settings.gallery_layout == 'carousel' and product.media.size > 1 -%}
     {%- assign show_gallery_controls = true -%}
   {%- endif -%}
-  <div class="pdp-gallery{% if section.settings.gallery_layout == 'stacked' %} pdp-gallery--stacked{% elsif show_gallery_controls %} pdp-gallery--with-thumbnails{% endif %}" data-gallery>
+  {%- assign picker_block = section.blocks | where: 'type', 'variant_picker' | first -%}
+  {%- assign gallery_color_name = picker_block.settings.color_option_name | default: 'Color' | strip | downcase -%}
+  {%- assign gallery_color_index = -1 -%}
+  {%- for option in product.options_with_values -%}
+    {%- assign option_name = option.name | strip | downcase -%}
+    {%- if option_name == gallery_color_name -%}
+      {%- assign gallery_color_index = forloop.index0 -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+  <div class="pdp-gallery{% if section.settings.gallery_layout == 'stacked' %} pdp-gallery--stacked{% elsif show_gallery_controls %} pdp-gallery--with-thumbnails{% endif %}" data-gallery data-color-index="{{ gallery_color_index }}" data-view-label="{{ section.settings.gallery_view_label | escape }}">
+    <script type="application/json" data-variant-media>
+      {
+        {% for variant in product.variants %}
+          "{{ variant.id }}": {{ variant.featured_media.id | json }}{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      }
+    </script>
     {% if show_gallery_controls %}
       <div class="pdp-gallery__thumbs">
         {% for media in product.media %}
@@ -21,9 +38,38 @@
       </div>
     {% endif %}
     <div class="pdp-gallery__stage">
-      {% for media in product.media %}<div class="pdp-gallery__slide" data-slide {% if show_gallery_controls and forloop.first == false %}hidden{% endif %} data-media-id="{{ media.id }}"{% if media.media_type == 'external_video' or media.media_type == 'model' %} style="--pdp-media-ratio: {{ media.aspect_ratio | default: media.preview_image.aspect_ratio | default: 1 }}"{% endif %}>{% case media.media_type %}{% when 'image' %}{{ media | image_url: width: 1600 | image_tag: widths: '550, 800, 1200, 1600', loading: 'lazy' }}{% when 'video' %}{{ media | video_tag: controls: true }}{% when 'external_video' %}{{ media | external_video_tag }}{% when 'model' %}{{ media | model_viewer_tag }}{% endcase %}</div>{% else %}{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}{% endfor %}
+      {% for media in product.media %}
+        {%- assign media_alt = media.alt | split: ' | color:' | first | strip -%}
+        {%- assign media_color = '' -%}
+        {%- if media.alt contains ' | color:' -%}
+          {%- assign media_color = media.alt | split: ' | color:' | last | strip -%}
+        {%- endif -%}
+        <div class="pdp-gallery__slide" data-slide data-media-id="{{ media.id }}" data-media-color="{{ media_color | escape }}"{% if show_gallery_controls and forloop.first == false %} hidden{% endif %}{% if media.media_type == 'external_video' or media.media_type == 'model' %} style="--pdp-media-ratio: {{ media.aspect_ratio | default: media.preview_image.aspect_ratio | default: 1 }}"{% endif %}>
+          {% case media.media_type %}
+            {% when 'image' %}
+              <button type="button" class="pdp-gallery__zoom" data-gallery-zoom="{{ media | image_url: width: 2400 }}" aria-label="Enlarge image{% if media_alt != blank %}: {{ media_alt | escape }}{% endif %}" disabled>
+                {{ media | image_url: width: 1600 | image_tag: widths: '550, 800, 1200, 1600', loading: 'lazy', alt: media_alt }}
+              </button>
+            {% when 'video' %}{{ media | video_tag: controls: true }}
+            {% when 'external_video' %}{{ media | external_video_tag }}
+            {% when 'model' %}{{ media | model_viewer_tag }}
+          {% endcase %}
+        </div>
+      {% endfor %}
+      <div class="pdp-gallery__slide" data-gallery-placeholder{% if product.media.size > 0 %} hidden{% endif %}>{{ 'product-1' | placeholder_svg_tag: 'placeholder' }}</div>
       {% if show_gallery_controls %}<button type="button" class="pdp-gallery__arrow prev" data-gallery-prev aria-label="{{ section.settings.gallery_previous_label | escape }}">←</button><button type="button" class="pdp-gallery__arrow next" data-gallery-next aria-label="{{ section.settings.gallery_next_label | escape }}">→</button><span class="pdp-gallery__count" data-gallery-count>1 / {{ product.media.size }}</span>{% endif %}
     </div>
+    {% if product.media.size > 0 %}
+      <dialog class="pdp-gallery__lightbox" data-gallery-lightbox aria-label="Product image viewer">
+        <button type="button" data-lightbox-close autofocus>Close</button>
+        <img data-lightbox-image alt="">
+        <div class="pdp-gallery__lightbox-controls" data-lightbox-controls>
+          <button type="button" data-lightbox-prev aria-label="{{ section.settings.gallery_previous_label | escape }}">←</button>
+          <span data-lightbox-count aria-live="polite"></span>
+          <button type="button" data-lightbox-next aria-label="{{ section.settings.gallery_next_label | escape }}">→</button>
+        </div>
+      </dialog>
+    {% endif %}
   </div>
   <div class="pdp-info{% if section.settings.enable_sticky_buy_box %} pdp-info--sticky{% endif %}">
     {% form 'product', product, id: product_form_id, class: 'pdp-form', data-product-form: '' %}
@@ -127,7 +173,7 @@
     {% endcase %}
   {% endif %}
 {% endfor %}{% if specs_open %}</div></section>{% endif %}
-{% if section.settings.enable_mobile_sticky_bar %}<div class="pdp-sticky-bar" data-sticky-bar>{% if product.featured_image %}{{ product.featured_image | image_url: width: 120 | image_tag: loading: 'lazy', alt: product.featured_image.alt }}{% endif %}<div><strong>{{ product.title | escape }}</strong><span data-sticky-price>{{ selected_variant.price | money }}</span></div><button type="submit" form="{{ product_form_id }}" data-sticky-add {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% endif %}
+{% if section.settings.enable_mobile_sticky_bar %}<div class="pdp-sticky-bar" data-sticky-bar>{% if product.featured_image %}{% assign sticky_alt = product.featured_image.alt | split: ' | color:' | first | strip %}{{ product.featured_image | image_url: width: 120 | image_tag: loading: 'lazy', alt: sticky_alt }}{% endif %}<div><strong>{{ product.title | escape }}</strong><span data-sticky-price>{{ selected_variant.price | money }}</span></div><button type="submit" form="{{ product_form_id }}" data-sticky-add {% unless selected_variant.available %}disabled{% endunless %}>{% if selected_variant.available %}{{ section.settings.add_label | escape }}{% else %}{{ section.settings.sold_out_label | escape }}{% endif %}</button></div>{% endif %}
 </div>
 {% schema %}
 {
